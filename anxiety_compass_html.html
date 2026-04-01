@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Anxiety Compass"/>
+  <meta name="theme-color" content="#1D9E75"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <title>Anxiety Compass</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #1D9E75; --green-bg: #EAF3DE; --green-bd: #C0DD97; --green-tx: #27500A; --green-md: #3B6D11;
+      --red-bg: #FCEBEB; --red-bd: #F7C1C1; --red-tx: #791F1F; --red-md: #A32D2D;
+      --amb-bg: #FAEEDA; --amb-bd: #FAC775; --amb-tx: #633806; --amb-md: #854F0B;
+      --blu-bg: #E6F1FB; --blu-bd: #B5D4F4; --blu-tx: #0C447C; --blu-md: #185FA5;
+      --pur-bg: #EEEDFE; --pur-bd: #CECBF6; --pur-tx: #3C3489; --pur-md: #534AB7;
+      --tel-bg: #E1F5EE; --tel-bd: #9FE1CB; --tel-tx: #085041; --tel-md: #0F6E56;
+      --bg: #ffffff; --bg2: #f8f8f5; --tx: #1a1a18; --tx2: #6b6b66; --tx3: #9c9a92;
+      --bd: rgba(0,0,0,0.10); --bd2: rgba(0,0,0,0.18);
+      --safe-top: env(safe-area-inset-top); --safe-bot: env(safe-area-inset-bottom);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a18; --bg2: #242422; --tx: #e8e6df; --tx2: #9c9a92; --tx3: #6b6b66;
+        --bd: rgba(255,255,255,0.08); --bd2: rgba(255,255,255,0.15);
+        --green-bg:#173404; --green-bd:#27500A; --green-tx:#C0DD97; --green-md:#97C459;
+        --red-bg:#2a1010; --red-bd:#501313; --red-tx:#F09595; --red-md:#E24B4A;
+        --amb-bg:#251a08; --amb-bd:#412402; --amb-tx:#FAC775; --amb-md:#EF9F27;
+        --blu-bg:#091e35; --blu-bd:#042C53; --blu-tx:#B5D4F4; --blu-md:#378ADD;
+        --pur-bg:#16123a; --pur-bd:#26215C; --pur-tx:#CECBF6; --pur-md:#7F77DD;
+        --tel-bg:#04201a; --tel-bd:#04342C; --tel-tx:#9FE1CB; --tel-md:#1D9E75;
+      }
+    }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: var(--bg2); color: var(--tx); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+    body { padding-top: var(--safe-top); padding-bottom: var(--safe-bot); }
+    #root { max-width: 430px; margin: 0 auto; min-height: 100vh; background: var(--bg2); }
+
+    .screen { display: none; }
+    .screen.active { display: block; padding: 20px 18px 40px; }
+
+    .card { background: var(--bg); border-radius: 18px; border: 0.5px solid var(--bd); padding: 18px; margin-bottom: 12px; }
+    .btn-primary { width: 100%; padding: 15px; border-radius: 13px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; color: #fff; background: var(--green); transition: opacity .15s, transform .1s; }
+    .btn-primary:active { opacity: .8; transform: scale(.98); }
+    .btn-soft { width: 100%; padding: 13px; border-radius: 13px; border: 0.5px solid var(--bd2); background: transparent; color: var(--tx2); font-size: 14px; cursor: pointer; font-family: inherit; margin-top: 10px; }
+    .back-btn { background: none; border: none; color: var(--tx3); font-size: 14px; cursor: pointer; padding: 4px 0 14px; font-family: inherit; display: block; }
+    .calm-bar { width: 100%; padding: 11px 16px; border-radius: 10px; border: 1.5px solid var(--blu-bd); background: var(--blu-bg); color: var(--blu-tx); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .level-btn { width: 100%; display: flex; align-items: center; gap: 14px; padding: 15px; border-radius: 16px; border: 2px solid; background: transparent; margin-bottom: 10px; cursor: pointer; font-family: inherit; text-align: left; }
+    .trigger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .trigger-btn { padding: 15px 12px; border-radius: 14px; border: 1.5px solid var(--bd); background: var(--bg); cursor: pointer; font-family: inherit; text-align: left; display: flex; flex-direction: column; gap: 5px; }
+    .strat-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; border: 1.5px solid; background: transparent; margin-bottom: 10px; cursor: pointer; font-family: inherit; text-align: left; }
+    .step-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--bd); }
+    .step-row:last-child { border-bottom: none; }
+    .step-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .ring-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto 16px; }
+    .ring-wrap svg { transform: rotate(-90deg); }
+    .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .stat-card { background: var(--bg); border-radius: 12px; padding: 12px 8px; border: 0.5px solid var(--bd); text-align: center; }
+    .h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .sub { font-size: 14px; color: var(--tx2); margin-bottom: 18px; line-height: 1.5; }
+    .label { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--tx3); margin-bottom: 4px; }
+    .fade { animation: fadeUp .3s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .cursor { opacity: .4; animation: blink .8s infinite; }
+    @keyframes blink { 0%,100%{opacity:.4}50%{opacity:0} }
+    .report-sec { border-radius: 14px; overflow: hidden; margin-bottom: 10px; border: 0.5px solid; }
+    .report-head { padding: 10px 14px 8px; border-bottom: 0.5px solid; }
+    .report-body { padding: 12px 14px; font-size: 13px; line-height: 1.65; white-space: pre-line; }
+  </style>
+</head>
+<body>
+<div id="root">
+
+  <!-- INTRO -->
+  <div class="screen" id="s-intro">
+    <div style="background:var(--green-bg);border-radius:20px;padding:28px 22px 24px;border:1.5px solid var(--green-bd);margin-bottom:18px">
+      <div style="font-size:44px;margin-bottom:8px">🧭</div>
+      <p class="h1" style="color:var(--green-tx)">Anxiety Compass</p>
+      <p style="font-size:14px;color:var(--green-md);line-height:1.6;margin:0">A calm check-in tool. No timers. No pressure. Just you, your feelings, and what helps.</p>
+    </div>
+    <div class="card">
+      <p style="font-size:13px;font-weight:600;margin-bottom:6px">Anthropic API Key</p>
+      <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;line-height:1.5">Needed for AI support messages and parent report. Get yours free at <a href="https://console.anthropic.com" style="color:var(--green)">console.anthropic.com</a> → API Keys.</p>
+      <input id="key-input" type="password" placeholder="sk-ant-..."
+        style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--bd2);background:var(--bg2);color:var(--tx);font-size:14px;font-family:monospace;outline:none;box-sizing:border-box;margin-bottom:10px"/>
+      <button class="btn-primary" onclick="saveKeyAndStart()">Save key &amp; start →</button>
+      <p id="key-saved-msg" style="font-size:11px;color:var(--tx3);text-align:center;margin-top:8px;display:none">Key saved on this device</p>
+    </div>
+    <button class="btn-soft" id="skip-btn" onclick="go('s-checkin')" style="display:none">Skip — go straight to check-in →</button>
+    <button class="btn-soft" onclick="go('s-report')" style="margin-top:8px">View parent report 📊</button>
+  </div>
+
+  <!-- CHECK-IN -->
+  <div class="screen" id="s-checkin">
+    <button class="back-btn" onclick="go('s-intro')">← Home</button>
+    <button class="calm-bar" onclick="openBreath()">🌬️ Tap here anytime to breathe</button>
+    <p class="h2">How does your body feel right now?</p>
+    <p class="sub">Tap the one that feels most like you.</p>
+    <div id="level-list"></div>
+    <button class="btn-soft" onclick="go('s-report')">Parent report 📊</button>
+  </div>
+
+  <!-- CALM CONFIRM -->
+  <div class="screen" id="s-calm">
+    <button class="back-btn" onclick="go('s-checkin')">← Back</button>
+    <div id="calm-card" style="border-radius:20px;padding:28px 22px;margin-bottom:18px;text-align:center;border:1.5px solid"></div>
+    <div class="card">
+      <p style="font-size:15px;color:var(--tx);line-height:1.6;margin-bottom:16px">That's a good sign. Your body is telling you things are okay right now.</p>
+      <button class="btn-primary" onclick="logEntry(null);go('s-checkin')">Log this &amp; finish ✓</button>
+    </div>
+  </div>
+
+  <!-- TRIGGER -->
+  <div class="screen" id="s-trigger">
+    <button class="back-btn" onclick="go('s-checkin')">← Back</button>
+    <button class="calm-bar" onclick="openBreath()">🌬️ Tap here anytime to breathe</button>
+    <p class="h2">What's making it hard?</p>
+    <p class="sub">Pick the closest one.</p>
+    <div class="trigger-grid" id="trigger-grid"></div>
+  </div>
+
+  <!-- AI RESPONSE -->
+  <div class="screen" id="s-ai">
+    <button class="back-btn" onclick="go('s-trigger')">← Back</button>
+    <div id="ai-level-chip" style="border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;border:1px solid"></div>
+    <div class="card" id="ai-box" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--green-bd);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🧭</div>
+        <div>
+          <p style="font-size:12px;font-weight:600;color:var(--green-md);margin-bottom:4px">Anxiety Compass</p>
+          <p id="ai-text" style="font-size:15px;color:var(--green-tx);line-height:1.7;margin:0"></p>
+        </div>
+      </div>
+    </div>
+    <div id="strat-list" style="display:none">
+      <p style="font-size:13px;font-weight:600;color:var(--tx);margin:16px 0 10px">Choose something to try:</p>
+      <div id="strat-btns"></div>
+      <button class="btn-soft" onclick="logEntry(null);go('s-done')">I feel better already ✓</button>
+    </div>
+  </div>
+
+  <!-- STRATEGY -->
+  <div class="screen" id="s-strategy">
+    <button class="back-btn" onclick="go('s-ai')">← Back</button>
+    <div id="strat-card" style="border-radius:20px;padding:24px;text-align:center;border:1.5px solid;margin-bottom:16px"></div>
+    <div class="card" id="rate-card" style="display:none">
+      <p style="font-size:15px;font-weight:600;margin-bottom:12px">Did this help?</p>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <button id="yes-btn" onclick="setHelpful(true)" style="flex:1;padding:12px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);font-size:20px;cursor:pointer">👍 Yes</button>
+        <button id="no-btn"  onclick="setHelpful(false)" style="flex:1;padding:12px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);font-size:20px;cursor:pointer">👎 Not really</button>
+      </div>
+      <textarea id="note-input" placeholder="Add a note (optional)…" rows="2"
+        style="width:100%;padding:10px;border-radius:10px;border:0.5px solid var(--bd2);font-size:13px;font-family:inherit;resize:none;background:var(--bg2);color:var(--tx);outline:none;margin-bottom:10px"></textarea>
+      <button class="btn-primary" onclick="finishStrategy()">Log this check-in ✓</button>
+    </div>
+  </div>
+
+  <!-- BREATHING OVERLAY -->
+  <div class="screen" id="s-breath">
+    <button class="back-btn" id="breath-back" onclick="go('s-checkin')">← Back</button>
+    <div style="background:var(--blu-bg);border-radius:20px;padding:24px;border:1.5px solid var(--blu-bd);text-align:center">
+      <p style="font-size:22px;font-weight:700;color:var(--blu-tx);margin-bottom:4px">🌬️ Box Breathing</p>
+      <p style="font-size:13px;color:var(--blu-md);margin-bottom:20px">3 cycles. Follow the circle.</p>
+      <div class="ring-wrap">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="56" fill="none" stroke="var(--blu-bd)" stroke-width="8"/>
+          <circle id="breath-ring" cx="70" cy="70" r="56" fill="none" stroke="#185FA5" stroke-width="8" stroke-linecap="round" stroke-dasharray="351.9" stroke-dashoffset="351.9" style="transition:stroke-dashoffset .9s linear,stroke .3s"/>
+        </svg>
+        <div class="ring-center">
+          <span id="breath-count" style="font-size:34px;font-weight:700;color:var(--blu-tx)">4</span>
+          <span id="breath-phase" style="font-size:13px;color:var(--blu-md);font-weight:600;margin-top:2px">Breathe IN</span>
+        </div>
+      </div>
+      <p id="breath-cycles" style="font-size:13px;color:var(--tx3);margin-bottom:20px">Cycle 1 of 3</p>
+      <button class="btn-primary" style="background:var(--blu-md)" onclick="endBreath()">I'm done</button>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div class="screen" id="s-done">
+    <div style="background:var(--green-bg);border-radius:20px;padding:28px 22px;border:1.5px solid var(--green-bd);margin-bottom:18px;text-align:center">
+      <div style="font-size:56px;margin-bottom:10px">🌿</div>
+      <p class="h2" style="color:var(--green-tx)">Check-in saved</p>
+      <p style="font-size:15px;color:var(--green-md);line-height:1.6;margin:0">You noticed how you felt and did something about it. That matters.</p>
+    </div>
+    <button class="btn-primary" onclick="go('s-checkin')">Check in again</button>
+    <button class="btn-soft" onclick="go('s-report')">View parent report 📊</button>
+    <button class="btn-soft" onclick="go('s-intro')">Home</button>
+  </div>
+
+  <!-- REPORT -->
+  <div class="screen" id="s-report">
+    <button class="back-btn" onclick="go('s-intro')">← Home</button>
+    <p class="h2">Parent Report</p>
+    <p id="report-sub" class="sub"></p>
+    <div class="stat-grid" id="stat-grid"></div>
+    <div id="trigger-bars" style="margin-bottom:14px"></div>
+    <button class="btn-primary" style="background:var(--pur-md);margin-bottom:14px" onclick="genReport()">Generate AI parent report ↗</button>
+    <div id="report-sections"></div>
+    <div class="card" id="recent-log"></div>
+  </div>
+
+</div>
+
+<script>
+/* ── Data ── */
+const LEVELS = [
+  {id:1,label:"All good",        color:"#1D9E75",bg:"var(--green-bg)",bd:"var(--green-bd)",tx:"var(--green-tx)",body:"My body feels calm and relaxed.",emoji:"😊"},
+  {id:2,label:"A little uneasy", color:"#639922",bg:"var(--green-bg)",bd:"var(--green-bd)",tx:"var(--green-tx)",body:"I feel a little tense or unsettled.",emoji:"🙂"},
+  {id:3,label:"Getting harder",  color:"#EF9F27",bg:"var(--amb-bg)", bd:"var(--amb-bd)", tx:"var(--amb-tx)", body:"My body feels tight. I notice it.",emoji:"😟"},
+  {id:4,label:"Really hard",     color:"#D85A30",bg:"var(--red-bg)", bd:"var(--red-bd)", tx:"var(--red-tx)", body:"My heart is beating fast. It's a lot.",emoji:"😰"},
+  {id:5,label:"Overwhelmed",     color:"#E24B4A",bg:"var(--red-bg)", bd:"var(--red-bd)", tx:"var(--red-tx)", body:"I can't handle it right now.",emoji:"😭"},
+];
+const TRIGGERS = [
+  {id:"loud",   label:"Too loud or bright",       icon:"🔊",desc:"Sounds, lights or smells are too much"},
+  {id:"change", label:"Something changed",         icon:"🔄",desc:"Plans changed or something unexpected"},
+  {id:"unknown",label:"I don't know what's next",  icon:"❓",desc:"I can't see what's coming"},
+  {id:"social", label:"Someone was unkind",         icon:"💬",desc:"A difficult moment with someone"},
+  {id:"mistake",label:"I made a mistake",           icon:"😔",desc:"Something didn't go the way I wanted"},
+  {id:"body",   label:"My body feels wrong",        icon:"💗",desc:"Heart racing, tight chest, stomach ache"},
+  {id:"crowd",  label:"Too many people",            icon:"👥",desc:"I feel crowded or watched"},
+  {id:"other",  label:"Something else",             icon:"🌀",desc:"I'm not sure what triggered it"},
+];
+const STRATEGIES = {
+  breathing:{id:"breathing",label:"Box breathing",    icon:"🌬️",color:"#185FA5",bg:"var(--blu-bg)",bd:"var(--blu-bd)",tx:"var(--blu-tx)",steps:["Breathe IN slowly… 1, 2, 3, 4","HOLD… 1, 2, 3, 4","Breathe OUT slowly… 1, 2, 3, 4","HOLD… 1, 2, 3, 4"]},
+  grounding: {id:"grounding", label:"5 things I see",  icon:"👀",color:"#0F6E56",bg:"var(--tel-bg)",bd:"var(--tel-bd)",tx:"var(--tel-tx)",steps:["Look around slowly","Find something RED","Find something ROUND","Find something SMALL","Find something FAR AWAY"]},
+  movement:  {id:"movement",  label:"Shake it out",    icon:"🤸",color:"#534AB7",bg:"var(--pur-bg)",bd:"var(--pur-bd)",tx:"var(--pur-tx)",steps:["Stand up if you can","Shake your hands fast for 5 seconds","Roll your shoulders 3 times","Take one big deep breath","Notice how your body feels now"]},
+  cold:      {id:"cold",      label:"Cold water",      icon:"💧",color:"#185FA5",bg:"var(--blu-bg)",bd:"var(--blu-bd)",tx:"var(--blu-tx)",steps:["Go to a tap or get a cold drink","Put cold water on your wrists","Hold it there for 10 seconds","Breathe out slowly","The cold helps your body calm down"]},
+  safe:      {id:"safe",      label:"Go to safe space", icon:"🏠",color:"#3B6D11",bg:"var(--green-bg)",bd:"var(--green-bd)",tx:"var(--green-tx)",steps:["It's okay to leave","Go to your calm space","Take your comfort item if you have one","You don't have to explain right now","Just be somewhere safe"]},
+  script:    {id:"script",    label:"What to say",     icon:"💬",color:"#854F0B",bg:"var(--amb-bg)",bd:"var(--amb-bd)",tx:"var(--amb-tx)",steps:['"I need a break."','"Can we talk about this later?"','"I\'m feeling overwhelmed."','"I need some quiet time."','"I\'ll be okay — I just need a moment."']},
+};
+const TRIG_STRATS = {
+  loud:["breathing","grounding","safe"],change:["breathing","grounding","script"],
+  unknown:["grounding","breathing","safe"],social:["script","breathing","safe"],
+  mistake:["breathing","grounding","movement"],body:["breathing","cold","movement"],
+  crowd:["safe","breathing","script"],other:["breathing","grounding","movement"],
+};
+const SEC_COLORS = {
+  PATTERNS: {bg:"var(--blu-bg)",bd:"var(--blu-bd)",tx:"var(--blu-tx)",md:"var(--blu-md)"},
+  TRIGGERS: {bg:"var(--amb-bg)",bd:"var(--amb-bd)",tx:"var(--amb-tx)",md:"var(--amb-md)"},
+  "WHAT HELPED":{bg:"var(--green-bg)",bd:"var(--green-bd)",tx:"var(--green-tx)",md:"var(--green-md)"},
+  SUGGESTIONS:{bg:"var(--pur-bg)",bd:"var(--pur-bd)",tx:"var(--pur-tx)",md:"var(--pur-md)"},
+};
+
+/* ── State ── */
+let state = {screen:"s-intro",level:null,trigger:null,strategy:null,stratStep:0,helpful:null,breathFrom:null};
+let breathTimer = null;
+
+/* ── Storage ── */
+const K_KEY="ac_api_key", K_LOG="ac_log";
+function getKey(){ try{return localStorage.getItem(K_KEY)||"";}catch{return "";} }
+function saveKey(k){ try{localStorage.setItem(K_KEY,k.trim());}catch{} }
+function getLog(){ try{return JSON.parse(localStorage.getItem(K_LOG)||"[]");}catch{return[];} }
+function saveLog(l){ try{localStorage.setItem(K_LOG,JSON.stringify(l.slice(-200)));}catch{} }
+function nowStr(){ return new Date().toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }
+
+/* ── Navigation ── */
+function go(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  const s=document.getElementById(id);
+  if(s){ s.classList.add("active","fade"); state.screen=id; window.scrollTo(0,0); }
+}
+
+/* ── Init screens ── */
+function initIntro(){
+  const k=getKey();
+  document.getElementById("key-input").value=k;
+  document.getElementById("key-saved-msg").style.display=k?"block":"none";
+  document.getElementById("skip-btn").style.display=k?"block":"none";
+}
+
+function initCheckin(){
+  const ll=document.getElementById("level-list"); ll.innerHTML="";
+  LEVELS.forEach(l=>{
+    const b=document.createElement("button");
+    b.className="level-btn";
+    b.style.cssText=`background:${l.bg};border-color:${l.color}44;`;
+    b.innerHTML=`<span style="font-size:32px;flex-shrink:0">${l.emoji}</span>
+      <div style="flex:1"><p style="font-size:16px;font-weight:700;color:${l.color};margin:0 0 2px">${l.label}</p>
+      <p style="font-size:13px;color:${l.color};margin:0;opacity:.85">${l.body}</p></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:${l.color};flex-shrink:0"></div>`;
+    b.onclick=()=>pickLevel(l);
+    ll.appendChild(b);
+  });
+}
+
+function initTrigger(){
+  const g=document.getElementById("trigger-grid"); g.innerHTML="";
+  TRIGGERS.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="trigger-btn";
+    b.innerHTML=`<span style="font-size:28px">${t.icon}</span>
+      <p style="font-size:13px;font-weight:600;color:var(--tx);margin:0;line-height:1.3">${t.label}</p>
+      <p style="font-size:11px;color:var(--tx2);margin:0;line-height:1.3">${t.desc}</p>`;
+    b.onclick=()=>pickTrigger(t);
+    g.appendChild(b);
+  });
+}
+
+/* ── Actions ── */
+function saveKeyAndStart(){
+  const v=document.getElementById("key-input").value.trim();
+  if(!v.startsWith("sk-")){ alert("Please enter a valid API key starting with sk-ant-"); return; }
+  saveKey(v);
+  initCheckin(); go("s-checkin");
+}
+
+function pickLevel(l){
+  state.level=l;
+  if(l.id<=2){
+    const c=document.getElementById("calm-card");
+    c.style.background=l.bg; c.style.borderColor=l.color+"44";
+    c.innerHTML=`<div style="font-size:56px;margin-bottom:10px">${l.emoji}</div>
+      <p style="font-size:22px;font-weight:700;color:${l.color};margin-bottom:8px">${l.label}</p>
+      <p style="font-size:15px;color:${l.color};opacity:.85;line-height:1.6">${l.body}</p>`;
+    go("s-calm");
+  } else {
+    initTrigger(); go("s-trigger");
+  }
+}
+
+function pickTrigger(t){
+  state.trigger=t;
+  const lv=state.level;
+  const chip=document.getElementById("ai-level-chip");
+  chip.style.background=lv.bg; chip.style.borderColor=lv.color+"44";
+  chip.innerHTML=`<span style="font-size:24px">${lv.emoji}</span>
+    <div><p style="font-size:13px;font-weight:600;color:${lv.color};margin:0">${lv.label}</p>
+    <p style="font-size:12px;color:${lv.color};margin:0;opacity:.8">${t.label}</p></div>`;
+  document.getElementById("ai-text").innerHTML=`<span style="color:var(--tx3)">…</span>`;
+  document.getElementById("strat-list").style.display="none";
+  go("s-ai");
+  fetchAI(lv,t);
+}
+
+async function fetchAI(lv,tr){
+  const key=getKey();
+  const el=document.getElementById("ai-text");
+  if(!key){ el.textContent="No API key set. Go to settings to add your key."; showStrategies(tr); return; }
+  const prompt=`You are a warm, calm support assistant for a child with ASD experiencing anxiety right now.
+Child check-in: Level ${lv.id}/5 — "${lv.label}" — "${lv.body}" — Trigger: "${tr.label}" (${tr.desc})
+Write EXACTLY 2 sentences. Sentence 1: validate using concrete literal language, name the trigger directly, no metaphors. Sentence 2: one simple specific physical action they can do RIGHT NOW.
+Rules: simple words, no abstractions, no "I understand how you feel", warm calm tone, do NOT say "it's okay", max 30 words per sentence.`;
+  let full="";
+  el.innerHTML=`<span style="color:var(--tx3)">…</span>`;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:120,stream:true,messages:[{role:"user",content:prompt}]})});
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    while(true){
+      const{done,value}=await reader.read(); if(done)break;
+      for(const line of dec.decode(value).split("\n").filter(l=>l.startsWith("data:"))){
+        try{const j=JSON.parse(line.slice(5));if(j.delta?.text){full+=j.delta.text;el.innerHTML=full+`<span class="cursor">▍</span>`;}}catch{}
+      }
+    }
+    el.textContent=full;
+  }catch{ el.textContent="Something went wrong. Try a breathing exercise below — it always helps."; }
+  showStrategies(tr);
+}
+
+function showStrategies(tr){
+  const ids=(TRIG_STRATS[tr.id]||["breathing","grounding","movement"]);
+  const container=document.getElementById("strat-btns"); container.innerHTML="";
+  ids.forEach(sid=>{
+    const s=STRATEGIES[sid];
+    const b=document.createElement("button");
+    b.className="strat-btn";
+    b.style.cssText=`border-color:${s.bd.replace("var(","").replace(")","")};background:${s.bg};`;
+    b.style.borderColor=`var(${s.bd.includes("var(")?"--blu-bd":s.bd})`;
+    b.innerHTML=`<span style="font-size:26px;flex-shrink:0">${s.icon}</span>
+      <div style="flex:1"><p style="font-size:14px;font-weight:600;color:${s.tx};margin:0">${s.label}</p></div>
+      <span style="font-size:20px;color:${s.color}">→</span>`;
+    b.onclick=()=>openStrategy(s);
+    container.appendChild(b);
+  });
+  document.getElementById("strat-list").style.display="block";
+}
+
+function openStrategy(s){
+  state.strategy=s; state.stratStep=0; state.helpful=null;
+  document.getElementById("rate-card").style.display="none";
+  document.getElementById("note-input").value="";
+  document.getElementById("yes-btn").style.borderColor="var(--bd)";
+  document.getElementById("yes-btn").style.background="var(--bg)";
+  document.getElementById("no-btn").style.borderColor="var(--bd)";
+  document.getElementById("no-btn").style.background="var(--bg)";
+  renderStratCard();
+  go("s-strategy");
+}
+
+function renderStratCard(){
+  const s=state.strategy; if(!s)return;
+  const c=document.getElementById("strat-card");
+  c.style.background=s.bg; c.style.borderColor=s.color+"55";
+  const done=state.stratStep>=s.steps.length;
+  if(done){
+    c.innerHTML=`<span style="font-size:48px">${s.icon}</span>
+      <p style="font-size:20px;font-weight:700;color:${s.tx};margin:10px 0 4px">${s.label}</p>
+      <p style="font-size:16px;color:${s.color};margin:14px 0 0;line-height:1.6">Well done. Take a moment and notice how your body feels now.</p>`;
+    document.getElementById("rate-card").style.display="block";
+    return;
+  }
+  const stepsHTML=s.steps.map((step,i)=>`
+    <div class="step-row">
+      <div class="step-num" style="background:${i<state.stratStep?s.color:i===state.stratStep?"#fff":"transparent"};border:2px solid ${i<=state.stratStep?s.color:s.color+"44"};color:${i<state.stratStep?"#fff":s.color}">
+        ${i<state.stratStep?"✓":i+1}
+      </div>
+      <p style="font-size:14px;color:${i===state.stratStep?s.tx:"var(--tx3)"};font-weight:${i===state.stratStep?600:400};margin:0;line-height:1.5;padding-top:2px">${step}</p>
+    </div>`).join("");
+  c.innerHTML=`<span style="font-size:44px">${s.icon}</span>
+    <p style="font-size:20px;font-weight:700;color:${s.tx};margin:10px 0 16px">${s.label}</p>
+    <div style="text-align:left">${stepsHTML}</div>
+    <button onclick="advanceStep()" style="margin-top:16px;padding:13px 28px;border-radius:12px;border:none;background:${s.color};color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+      ${state.stratStep===s.steps.length-1?"Done ✓":"Next →"}
+    </button>`;
+}
+
+function advanceStep(){
+  const s=state.strategy; if(!s)return;
+  state.stratStep=Math.min(state.stratStep+1,s.steps.length);
+  renderStratCard();
+}
+
+function setHelpful(val){
+  state.helpful=val;
+  const yb=document.getElementById("yes-btn"), nb=document.getElementById("no-btn");
+  yb.style.borderColor=val===true?"#1D9E75":"var(--bd)";
+  yb.style.background=val===true?"var(--green-bg)":"var(--bg)";
+  nb.style.borderColor=val===false?"#E24B4A":"var(--bd)";
+  nb.style.background=val===false?"var(--red-bg)":"var(--bg)";
+}
+
+function finishStrategy(){
+  logEntry(state.helpful);
+  go("s-done");
+}
+
+function logEntry(helpful){
+  const lv=state.level, tr=state.trigger, st=state.strategy;
+  const note=document.getElementById("note-input")?.value||"";
+  const entry={ts:nowStr(),level:lv?.id,levelLabel:lv?.label,trigger:tr?.id,triggerLabel:tr?.label,strategy:st?.id,stratLabel:st?.label,helpful,note};
+  const log=getLog(); log.push(entry); saveLog(log);
+}
+
+/* ── Breathing ── */
+let breathPhase=0, breathCount=4, breathCycles=0;
+const PHASES=["Breathe IN","HOLD","Breathe OUT","HOLD"];
+const PHASE_COLORS=["#1D9E75","#639922","#185FA5","#534AB7"];
+
+function openBreath(){
+  state.breathFrom=state.screen;
+  document.getElementById("breath-back").onclick=()=>go(state.breathFrom||"s-checkin");
+  breathPhase=0; breathCount=4; breathCycles=0;
+  updateBreathUI();
+  go("s-breath");
+  clearInterval(breathTimer);
+  breathTimer=setInterval(()=>{
+    breathCount--;
+    if(breathCount<=0){
+      breathPhase=(breathPhase+1)%4;
+      if(breathPhase===0){ breathCycles++; if(breathCycles>=3){ clearInterval(breathTimer); return; } }
+      breathCount=4;
+    }
+    updateBreathUI();
+  },1000);
+}
+
+function updateBreathUI(){
+  const ring=document.getElementById("breath-ring");
+  const count=document.getElementById("breath-count");
+  const phase=document.getElementById("breath-phase");
+  const cycles=document.getElementById("breath-cycles");
+  if(!ring)return;
+  const circ=351.9;
+  const pct=breathCount/4;
+  ring.style.strokeDashoffset=circ*(1-pct);
+  ring.style.stroke=PHASE_COLORS[breathPhase];
+  count.textContent=breathCount;
+  count.style.color=PHASE_COLORS[breathPhase];
+  phase.textContent=PHASES[breathPhase];
+  phase.style.color=PHASE_COLORS[breathPhase];
+  cycles.textContent=`Cycle ${breathCycles+1} of 3`;
+}
+
+function endBreath(){
+  clearInterval(breathTimer);
+  go(state.breathFrom||"s-checkin");
+}
+
+/* ── Report ── */
+function initReport(){
+  const log=getLog();
+  document.getElementById("report-sub").textContent=`${log.length} check-in${log.length!==1?"s":""} logged`;
+  const avgLvl=log.length>0?(log.reduce((a,l)=>a+(l.level||0),0)/log.length).toFixed(1):"—";
+  const helpfulCount=log.filter(l=>l.helpful===true).length;
+  document.getElementById("stat-grid").innerHTML=
+    [["Check-ins",log.length,"var(--blu-md)"],["Avg level",`${avgLvl}/5`,"var(--amb-md)"],["Helped",helpfulCount,"var(--green-md)"]].map(([l,v,c])=>
+      `<div class="stat-card"><p class="label">${l}</p><p style="font-size:20px;font-weight:700;color:${c};margin:0">${v}</p></div>`
+    ).join("");
+  const trigCounts={};
+  log.forEach(l=>{if(l.triggerLabel)trigCounts[l.triggerLabel]=(trigCounts[l.triggerLabel]||0)+1;});
+  const top=Object.entries(trigCounts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  if(top.length>0){
+    document.getElementById("trigger-bars").innerHTML=`
+      <div class="card"><p class="label" style="margin-bottom:10px">Top triggers</p>
+      ${top.map(([t,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:13px;color:var(--tx2);flex:1">${t}</span>
+        <div style="width:80px;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden">
+          <div style="width:${Math.round(v/log.length*100)}%;height:100%;background:var(--amb-color,#EF9F27);border-radius:4px"></div>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--amb-tx);min-width:18px;text-align:right">${v}×</span>
+      </div>`).join("")}</div>`;
+  }
+  const recent=log.slice(-5).reverse();
+  document.getElementById("recent-log").innerHTML=`<p class="label" style="margin-bottom:10px">Recent sessions</p>`+
+    (recent.length===0?`<p style="font-size:13px;color:var(--tx3)">None yet.</p>`:
+    recent.map((l,i)=>`<div style="display:flex;gap:8px;align-items:center;${i<recent.length-1?"padding-bottom:8px;margin-bottom:8px;border-bottom:0.5px solid var(--bd)":""}">
+      <span style="font-size:18px">${LEVELS.find(lv=>lv.id===l.level)?.emoji||"🔵"}</span>
+      <div style="flex:1"><p style="font-size:12px;font-weight:500;color:var(--tx);margin:0">${l.triggerLabel||"Check-in"}</p>
+      <p style="font-size:11px;color:var(--tx3);margin:0">${l.ts}</p></div>
+      ${l.helpful!==null&&l.helpful!==undefined?`<span style="font-size:14px">${l.helpful?"👍":"👎"}</span>`:""}
+    </div>`).join(""));
+  document.getElementById("report-sections").innerHTML="";
+}
+
+async function genReport(){
+  const log=getLog(); const key=getKey();
+  const sec=document.getElementById("report-sections");
+  if(!key){ sec.innerHTML=`<div class="card"><p style="font-size:14px;color:var(--tx2)">No API key set. Go to home to add your key.</p></div>`; return; }
+  if(log.length===0){ sec.innerHTML=`<div class="card"><p style="font-size:14px;color:var(--tx2)">No check-ins yet. Complete a few sessions first.</p></div>`; return; }
+  sec.innerHTML=`<p style="font-size:13px;color:var(--tx3);text-align:center;margin-bottom:14px">Generating your report…</p>`;
+  const counts={};log.forEach(l=>{counts[l.triggerLabel]=(counts[l.triggerLabel]||0)+1;});
+  const topT=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const avgLvl=(log.reduce((a,l)=>a+(l.level||0),0)/log.length).toFixed(1);
+  const helpfulPct=log.filter(l=>l.helpful===true).length;
+  const prompt=`You are a warm clinical support assistant writing a weekly anxiety pattern report for a PARENT of a child with ASD.
+Session data (${log.length} check-ins): Average anxiety level: ${avgLvl}/5. Most common trigger: ${topT?.[0]||"unknown"} (${topT?.[1]||0} times). Strategies marked helpful: ${helpfulPct} of ${log.filter(l=>l.helpful!==null).length}. All sessions: ${JSON.stringify(log.slice(-20))}
+Write a warm clear parent report with these EXACT section headers:
+PATTERNS:
+TRIGGERS:
+WHAT HELPED:
+SUGGESTIONS:
+Rules: write for a parent not a clinician, plain English, be specific referencing actual data, SUGGESTIONS must have exactly 3 practical things the parent can do this week, each section 2-3 sentences max, warm but honest tone.`;
+  let full="";
+  function buildHTML(text){
+    const parsed={};
+    ["PATTERNS","TRIGGERS","WHAT HELPED","SUGGESTIONS"].forEach(k=>{
+      const rx=new RegExp(`${k}:\\s*([\\s\\S]*?)(?=PATTERNS:|TRIGGERS:|WHAT HELPED:|SUGGESTIONS:|$)`,"i");
+      const m=text.match(rx); if(m) parsed[k]=m[1].trim();
+    });
+    return Object.entries(SEC_COLORS).map(([k,c])=>parsed[k]?`
+      <div class="report-sec" style="border-color:${c.bd}">
+        <div class="report-head" style="background:${c.bg};border-color:${c.bd}">
+          <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:${c.md};margin:0">${k}</p>
+        </div>
+        <div class="report-body" style="background:${c.bg};color:${c.tx}">${parsed[k]}</div>
+      </div>`:""
+    ).join("");
+  }
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,stream:true,messages:[{role:"user",content:prompt}]})});
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    while(true){
+      const{done,value}=await reader.read(); if(done)break;
+      for(const line of dec.decode(value).split("\n").filter(l=>l.startsWith("data:"))){
+        try{const j=JSON.parse(line.slice(5));if(j.delta?.text){full+=j.delta.text;sec.innerHTML=buildHTML(full);}}catch{}
+      }
+    }
+  }catch{ sec.innerHTML=`<div class="card"><p style="font-size:14px;color:var(--tx2)">Report unavailable — check your connection.</p></div>`; }
+}
+
+/* ── Boot ── */
+document.querySelectorAll(".screen").forEach(s=>{
+  const orig=s.onclick; s.onclick=null;
+});
+initIntro();
+initCheckin();
+go("s-intro");
+
+const origGo=go;
+window.go=function(id){
+  if(id==="s-report") initReport();
+  origGo(id);
+};
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
