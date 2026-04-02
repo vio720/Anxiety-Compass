@@ -9,6 +9,8 @@
   <meta name="theme-color" content="#1D9E75"/>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
   <title>Anxiety Compass</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -67,7 +69,16 @@
     .report-body{padding:12px 14px;font-size:13px;line-height:1.65;white-space:pre-line}
     .cursor{opacity:.4;animation:blink .8s infinite}
     @keyframes blink{0%,100%{opacity:.4}50%{opacity:0}}
-    .streak-badge{display:inline-flex;align-items:center;gap:5px;background:var(--amb-bg);border:1px solid var(--amb-bd);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--amb-tx)}
+    .logo-img { width: 90px; height: 90px; border-radius: 22px; object-fit: cover; display: block; }
+    .logo-sm   { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+    .hero-bg   { position: relative; overflow: hidden; }
+    .hero-bg::before { content:""; position:absolute; inset:0; background: radial-gradient(ellipse at 70% 30%, rgba(29,158,117,0.12) 0%, transparent 70%); pointer-events:none; }
+    .card-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+    .level-emoji { font-size: 36px; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.08)); }
+    .sparkle { animation: sparkle 2.5s ease-in-out infinite; }
+    @keyframes sparkle { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
+    .float { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
     .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0}
     .week-day{display:flex;flex-direction:column;align-items:center;gap:4px}
     .week-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent}
@@ -84,13 +95,17 @@
 
 <!-- INTRO / HOME -->
 <div class="screen" id="s-intro">
-  <div style="background:var(--green-bg);border-radius:20px;padding:24px 20px 20px;border:1.5px solid var(--green-bd);margin-bottom:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <span style="font-size:36px">🧭</span>
-      <div id="streak-display"></div>
+  <div class="hero-bg" style="background:linear-gradient(135deg,var(--green-bg) 0%,#f0f8ff 100%);border-radius:24px;padding:22px 20px 20px;border:1.5px solid var(--green-bd);margin-bottom:16px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+      <img src="icon-512.png" alt="Anxiety Compass" class="logo-img float"
+        onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'"/>
+      <div id="logo-fallback" style="display:none;width:90px;height:90px;border-radius:22px;background:var(--green-bg);border:1.5px solid var(--green-bd);align-items:center;justify-content:center;font-size:42px">🧭</div>
+      <div style="text-align:right">
+        <div id="streak-display"></div>
+      </div>
     </div>
-    <p style="font-size:24px;font-weight:700;color:var(--green-tx);margin-bottom:4px">Anxiety Compass</p>
-    <p style="font-size:14px;color:var(--green-md);line-height:1.5;margin:0">No timers. No pressure. Just check in and feel better.</p>
+    <p style="font-size:26px;font-weight:700;color:var(--green-tx);margin-bottom:4px">Anxiety Compass</p>
+    <p style="font-size:14px;color:var(--green-md);line-height:1.5;margin:0">No timers. No pressure.<br>Just check in and feel better.</p>
   </div>
   <div id="checkin-nudge" class="card" style="display:none"></div>
   <button class="btn" onclick="go('s-checkin')" style="margin-bottom:10px">How do I feel right now? →</button>
@@ -196,7 +211,10 @@
   <div id="ai-chip" style="border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;border:1px solid"></div>
   <div class="card" style="background:var(--green-bg);border:1.5px solid var(--green-bd);margin-bottom:14px">
     <div style="display:flex;gap:10px;align-items:flex-start">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--green-bd);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🧭</div>
+      <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:var(--bg);border:1px solid var(--green-bd);flex-shrink:0">
+          <img src="icon-512.png" alt="" style="width:100%;height:100%;object-fit:cover"
+            onerror="this.parentElement.innerHTML='🧭'"/>
+        </div>
       <div><p style="font-size:12px;font-weight:600;color:var(--green-md);margin-bottom:4px">Anxiety Compass</p>
       <p id="ai-text" style="font-size:15px;color:var(--green-tx);line-height:1.7;margin:0"></p></div>
     </div>
@@ -247,8 +265,10 @@
 
 <!-- DONE GOOD -->
 <div class="screen" id="s-done-good">
-  <div style="background:var(--green-bg);border-radius:20px;padding:28px 22px;border:1.5px solid var(--green-bd);margin-bottom:16px;text-align:center">
-    <div style="font-size:52px;margin-bottom:10px">🌿</div>
+  <div style="background:linear-gradient(135deg,var(--green-bg),#f0faf5);border-radius:20px;padding:28px 22px;border:1.5px solid var(--green-bd);margin-bottom:16px;text-align:center">
+    <img src="icon-512.png" alt="" class="float" style="width:80px;height:80px;border-radius:20px;object-fit:cover;margin-bottom:12px"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+    <div style="display:none;font-size:52px;margin-bottom:10px">🌿</div>
     <p style="font-size:22px;font-weight:700;color:var(--green-tx);margin-bottom:8px">Check-in saved</p>
     <p style="font-size:15px;color:var(--green-md);line-height:1.6" id="done-good-msg">You checked in today. That's the whole job.</p>
   </div>
@@ -259,8 +279,10 @@
 
 <!-- DONE CRISIS -->
 <div class="screen" id="s-done-crisis">
-  <div style="background:var(--green-bg);border-radius:20px;padding:28px 22px;border:1.5px solid var(--green-bd);margin-bottom:16px;text-align:center">
-    <div style="font-size:52px;margin-bottom:10px">💚</div>
+  <div style="background:linear-gradient(135deg,var(--green-bg),#f0faf5);border-radius:20px;padding:28px 22px;border:1.5px solid var(--green-bd);margin-bottom:16px;text-align:center">
+    <img src="icon-512.png" alt="" class="float" style="width:80px;height:80px;border-radius:20px;object-fit:cover;margin-bottom:12px"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+    <div style="display:none;font-size:52px;margin-bottom:10px">💚</div>
     <p style="font-size:22px;font-weight:700;color:var(--green-tx);margin-bottom:8px">You did it</p>
     <p style="font-size:15px;color:var(--green-md);line-height:1.6">You noticed how you felt and did something about it. That takes courage.</p>
   </div>
