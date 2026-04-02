@@ -1,7 +1,7 @@
 {
   "name": "Anxiety Compass",
   "short_name": "Compass",
-  "description": "A calm anxiety check-in tool for children with ASD.",
+  "description": "A calm daily check-in tool for children with ASD.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
